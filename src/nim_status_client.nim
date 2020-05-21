@@ -21,6 +21,7 @@ import status/libstatusqml
 import status/types
 import eventemitter
 import os
+import constants/constants
 
 var signalsQObjPointer: pointer
 
@@ -34,9 +35,9 @@ proc initNode(): string =
   const keystoredir = "./data/keystore/"
   const nobackupdir = "./noBackup/"
 
-  ensureDir(datadir)
-  ensureDir(keystoredir)
-  ensureDir(nobackupdir)
+  ensureDir(DATA_DIR)
+  ensureDir(KEYSTORE_DIR)
+  ensureDir(NOBACKUP_DIR)
 
   # 1
   result = $libstatus.initKeystore(keystoredir);
@@ -45,7 +46,7 @@ proc initNode(): string =
   result = $libstatus.openAccounts(datadir);
 
 proc mainProc() =
-  discard initNode()
+  let accounts = initNode()
 
   let app = newQApplication()
   let engine = newQQmlApplicationEngine()
@@ -83,7 +84,7 @@ proc mainProc() =
   
   engine.setRootContextProperty("nodeModel", node.variant)
   
-  var onboarding = newOnboarding(events);
+  var onboarding = newOnboarding(events, accounts);
   defer: onboarding.delete
 
   let onboardingVariant = newQVariant(onboarding)

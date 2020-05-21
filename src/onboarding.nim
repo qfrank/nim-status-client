@@ -9,12 +9,14 @@ import constants/constants
 import uuids
 import eventemitter
 import status/test as status_test
+import strutils
 
 # Probably all QT classes will look like this:
 QtObject:
   type Onboarding* = ref object of QObject
     m_generatedAddresses: string
     events: EventEmitter
+    m_accounts: string
 
   # ¯\_(ツ)_/¯ dunno what is this
   proc setup(self: Onboarding) =
@@ -25,14 +27,31 @@ QtObject:
     self.QObject.delete
 
   # Constructor
-  proc newOnboarding*(events: EventEmitter): Onboarding =
+  proc newOnboarding*(events: EventEmitter, accounts: string): Onboarding =
     new(result, delete)
     result.events = events
+    result.m_accounts = accounts
     result.setup()
 
   # Read more about slots and signals here: https://doc.qt.io/qt-5/signalsandslots.html
 
   # Accesors
+  proc getAccounts*(self: Onboarding): string {.slot.} =
+    result = self.m_accounts
+
+  proc accountsChanged*(self: Onboarding, accounts: string) {.signal.}
+
+  proc setAccounts*(self: Onboarding, accounts: string) {.slot.} =
+    if self.m_accounts == accounts:
+      return
+    self.m_accounts = accounts
+    self.accountsChanged(accounts)
+
+  QtProperty[string]accounts:
+    read = getAccounts
+    write = setAccounts
+    notify = accountsChanged
+
   proc getGeneratedAddresses*(self: Onboarding): string {.slot.} =
     result = self.m_generatedAddresses
 
@@ -51,6 +70,16 @@ QtObject:
     notify = generatedAddressesChanged
 
   # QML functions
+  proc login*(self: Onboarding, accountData: string, password: string): string {.slot.} =
+    let hashedPassword = $keccak_256.digest(password)
+    echo ">>>>>>>> Logging in with: ", accountData, "0x" & hashedPassword.toLower
+    result = login(accountData, "0x" & hashedPassword.toLower)
+    echo ">>>>>>>> login result: ", result
+    let loginResult = result.parseJson
+    if loginResult["error"].getStr == "":
+      self.events.emit("node:ready", Args())
+      echo "Account saved succesfully"
+
   proc generateAddresses*(self: Onboarding) {.slot.} =
     self.setGeneratedAddresses(generateAddresses())
 
@@ -89,9 +118,12 @@ QtObject:
       "public-key": multiAccounts[constants.PATH_WHISPER]["publicKey"].getStr,
       "name": alias,
       "address": account.address,
-      "eip1581-address": multiAccounts[constants.PATH_EIP_1581]["address"].getStr,
-      "dapps-address": multiAccounts[constants.PATH_DEFAULT_WALLET]["address"].getStr,
-      "wallet-root-address": multiAccounts[constants.PATH_WALLET_ROOT]["address"].getStr,
+      "eip1581-address": multiAccounts[constants.PATH_EIP_1581][
+          "address"].getStr,
+      "dapps-address": multiAccounts[constants.PATH_DEFAULT_WALLET][
+          "address"].getStr,
+      "wallet-root-address": multiAccounts[constants.PATH_WALLET_ROOT][
+          "address"].getStr,
       "preview-privacy?": true,
       "signing-phrase": generateSigningPhrase(3),
       "log-level": "INFO",
@@ -127,7 +159,8 @@ QtObject:
       }
     ]
 
-    result = $libstatus.saveAccountAndLogin($accountData, password, $settingsJSON,
+    result = $libstatus.saveAccountAndLogin($accountData, password,
+      $settingsJSON,
       $nodeConfig, $subaccountData)
 
     let saveResult = result.parseJson

@@ -10,7 +10,7 @@ SwipeView {
   currentIndex: 0
 
   property string strGeneratedAccounts: onboardingLogic.generatedAddresses
-  property var generatedAccounts: {}
+  property var generatedAccounts: ({})
   signal storeAccountAndLoginResult(response: var)
 
   onCurrentItemChanged: {
@@ -183,7 +183,7 @@ SwipeView {
       id: storeAccountAndLoginError
       title: "Error storing account and logging in"
       text: "An error occurred while storing your account and logging in: "
-      icon: StandardIcon.Error
+      icon: StandardIcon.Warning
       standardButtons: StandardButton.Ok
     }
 

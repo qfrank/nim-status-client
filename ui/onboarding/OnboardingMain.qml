@@ -9,11 +9,23 @@ Page {
 
     DSM.StateMachine {
         id: stateMachine
-        initialState: stateIntro
+        initialState: onboardingLogic.getAccounts ? loginState : introState
         running: onboardingMain.visible
 
         DSM.State {
-            id: stateIntro
+            id: loginState
+            onEntered: login.visible = true
+            onExited: login.visible = false
+
+            DSM.SignalTransition {
+                targetState: appState
+                signal: login.loginResult
+                guard: !response.error
+            }
+        }
+
+        DSM.State {
+            id: introState
             onEntered: intro.visible = true
             onExited: intro.visible = false
 
@@ -72,7 +84,7 @@ Page {
     Intro {
         id: intro
         anchors.fill: parent
-        visible: true
+        visible: false
     }
 
     KeysMain {
@@ -89,6 +101,12 @@ Page {
 
     GenKey {
         id: genKey
+        anchors.fill: parent
+        visible: false
+    }
+
+    Login {
+        id: login
         anchors.fill: parent
         visible: false
     }

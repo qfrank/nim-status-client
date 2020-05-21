@@ -19,8 +19,8 @@ let DEFAULT_NETWORKS* = %* [
       "UpstreamConfig": {
         "Enabled": true,
         "URL": "https://ropsten.infura.io/v3/f315575765b14720b32382a61a89341a"
-      }
     }
+  }
   },
   {
     "id": "rinkeby_rpc",
@@ -32,8 +32,8 @@ let DEFAULT_NETWORKS* = %* [
       "UpstreamConfig": {
         "Enabled": true,
         "URL": "https://rinkeby.infura.io/v3/f315575765b14720b32382a61a89341a"
-      }
     }
+  }
   },
   {
     "id": "goerli_rpc",
@@ -45,8 +45,8 @@ let DEFAULT_NETWORKS* = %* [
       "UpstreamConfig": {
         "Enabled": true,
         "URL": "https://goerli.blockscout.com/"
-      }
     }
+  }
   },
   {
     "id": "mainnet_rpc",
@@ -58,8 +58,8 @@ let DEFAULT_NETWORKS* = %* [
       "UpstreamConfig": {
         "Enabled": true,
         "URL": "https://mainnet.infura.io/v3/f315575765b14720b32382a61a89341a"
-      }
     }
+  }
   },
   {
     "id": "xdai_rpc",
@@ -70,8 +70,8 @@ let DEFAULT_NETWORKS* = %* [
       "UpstreamConfig": {
         "Enabled": true,
         "URL": "https://dai.poa.network"
-      }
     }
+  }
   },
   {
     "id": "poa_rpc",
@@ -82,8 +82,8 @@ let DEFAULT_NETWORKS* = %* [
       "UpstreamConfig": {
         "Enabled": true,
         "URL": "https://core.poa.network"
-      }
     }
+  }
   }
 ]
 
@@ -170,3 +170,7 @@ let NODE_CONFIG* = %* {
     "Enabled": true
   }
 }
+
+const DATA_DIR* = "./data/"
+const KEYSTORE_DIR* = "./data/keystore/"
+const NOBACKUP_DIR* = "./noBackup/"

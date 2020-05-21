@@ -1,6 +1,7 @@
 import libstatus
 import json
 import utils
+import ../constants/constants
 
 proc generateAddresses*(): string =
   let multiAccountConfig = %* {
@@ -13,3 +14,9 @@ proc generateAddresses*(): string =
 
 proc generateAlias*(publicKey: string): string =
   result = $libstatus.generateAlias(publicKey.toGoString)
+
+proc openAccounts*(): string =
+  result = $libstatus.openAccounts(DATA_DIR)
+
+proc login*(accountData: string, password: string): string =
+  result = $libstatus.login(accountData, password)
