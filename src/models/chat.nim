@@ -49,32 +49,26 @@ proc join*(self: ChatModel, chatId: string, chatType: ChatType) =
 
   self.channels.incl chatId
 
-  #let generatedSymKey = status_chat.generateSymKeyFromPassword()
+  let generatedSymKey = status_chat.generateSymKeyFromPassword()
 
   # TODO get this from the connection or something
-  #let peer = "enode://44160e22e8b42bd32a06c1532165fa9e096eebedd7fa6d6e5f8bbef0440bc4a4591fe3651be68193a7ec029021cdb496cfe1d7f9f1dc69eb99226e6f39a7a5d4@35.225.221.245:443"
+  let peer = "enode://44160e22e8b42bd32a06c1532165fa9e096eebedd7fa6d6e5f8bbef0440bc4a4591fe3651be68193a7ec029021cdb496cfe1d7f9f1dc69eb99226e6f39a7a5d4@35.225.221.245:443"
 
   status_chat.saveChat(chatId, chatType.isOneToOne)
-  echo status_chat.loadFilters(@[status_chat.buildFilter(chatId = chatId, oneToOne = chatType.isOneToOne)])
+  let filterResult = status_chat.loadFilters(@[status_chat.buildFilter(chatId = chatId, oneToOne = chatType.isOneToOne)])
   
-  #status_chat.chatMessages(chatId)
+  let parsedResult = parseJson(filterResult)["result"]
 
-  #let filterResult = status_chat.loadFilters(chatId = chatId, oneToOne = oneToOne)
-  
+  var topics = newSeq[string](0)
+  for topicObj in parsedResult:
+    if (($topicObj["chatId"]).strip(chars = {'"'}) == chatId):
+      topics.add(($topicObj["topic"]).strip(chars = {'"'}))
+    if(not self.filters.hasKey(chatId)): self.filters[chatId] = topicObj["filterId"].getStr
 
-  #let parsedResult = parseJson(filterResult)["result"]
-
-  #var topics = newSeq[string](0)
-  #for topicObj in parsedResult:
-  #  if (($topicObj["chatId"]).strip(chars = {'"'}) == chatId):
-  #    topics.add(($topicObj["topic"]).strip(chars = {'"'}))
-
-  #  if(not self.filters.hasKey(chatId)): self.filters[chatId] = topicObj["filterId"].getStr
-
-  #if (topics.len == 0):
-  #  warn "No topic found for the chat. Cannot load past messages"
-  #else:
-  #  status_chat.requestMessages(topics, generatedSymKey, peer, 20)
+  if (topics.len == 0):
+    warn "No topic found for the chat. Cannot load past messages"
+  else:
+    status_chat.requestMessages(topics, generatedSymKey, peer, 20)
 
   self.events.emit("channelJoined", ChannelArgs(channel: chatId, chatTypeInt: chatType))
   self.events.emit("activeChannelChanged", ChannelArgs(channel: self.getActiveChannel()))
@@ -103,9 +97,6 @@ proc init*(self: ChatModel) =
   let filterResult = status_chat.loadFilters(filters)
   
   self.events.emit("chatsLoaded", ChatArgs(chats: chatList))
-  
-  # TODO: call mailserver
-
 
   let parsedResult = parseJson(filterResult)["result"]
   var topics = newSeq[string](0)
