@@ -7,6 +7,7 @@ import ../../signals/types
 import strformat
 import json_serialization
 import ../../models/accounts as AccountModel
+import views/account_info
 
 type
   AccountRoles {.pure.} = enum
@@ -18,6 +19,7 @@ QtObject:
   type OnboardingView* = ref object of QAbstractListModel
     accounts*: seq[GeneratedAccount]
     lastLoginResponse: string
+    importedAccount: AccountInfoView
     model*: AccountModel
 
   proc setup(self: OnboardingView) =
@@ -31,6 +33,7 @@ QtObject:
     new(result, delete)
     result.accounts = @[]
     result.lastLoginResponse = ""
+    result.importedAccount = newAccountInfoView()
     result.model = model
     result.setup
 
@@ -53,7 +56,7 @@ QtObject:
     case assetRole:
     of AccountRoles.Username: result = newQVariant(asset.name)
     of AccountRoles.Identicon: result = newQVariant(asset.photoPath)
-    of AccountRoles.Key: result = newQVariant(asset.keyUid)
+    of AccountRoles.Key: result = newQVariant(asset.derived.whisper.address)
 
   method roleNames(self: OnboardingView): Table[int, string] =
     { AccountRoles.Username.int:"username",
@@ -69,16 +72,44 @@ QtObject:
         msg = getCurrentExceptionMsg()
       result = SignalError(error: msg).toJson
 
+  proc getImportedAccount*(self: OnboardingView): QVariant {.slot.} =
+    result = newQVariant(self.importedAccount)
+
+  proc setImportedAccount*(self: OnboardingView, importedAccount: GeneratedAccount) =
+    self.importedAccount.setAccount(importedAccount)
+
+  QtProperty[QVariant] importedAccount:
+    read = getImportedAccount
+
+  proc importMnemonic(self: OnboardingView, mnemonic: string): string {.slot.} =
+    try:
+      let importResult = self.model.importMnemonic(mnemonic)
+      result = importResult.toJson
+      self.setImportedAccount(importResult)
+    except:
+      let
+        e = getCurrentException()
+        msg = getCurrentExceptionMsg()
+      result = SignalError(error: msg).toJson
+
+  proc storeDerivedAndLogin(self: OnboardingView, password: string): string {.slot.} =
+    try:
+      result = self.model.storeDerivedAndLogin(self.importedAccount.account, password).toJson
+    except:
+      let
+        e = getCurrentException()
+        msg = getCurrentExceptionMsg()
+      result = SignalError(error: msg).toJson
+
   proc lastLoginResponse*(self: OnboardingView): string =
     result = self.lastLoginResponse
 
   proc loginResponseChanged*(self: OnboardingView, response: string) {.signal.}
 
-  proc setLastLoginResponse*(self: OnboardingView, loginResponse: string) {.slot.} =
+  proc setLastLoginResponse*(self: OnboardingView, loginResponse: string) =
     self.lastLoginResponse = loginResponse
     self.loginResponseChanged(loginResponse)
 
   QtProperty[string] loginResponse:
     read = lastLoginResponse
-    write = setLastLoginResponse
     notify = loginResponseChanged

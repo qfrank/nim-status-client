@@ -29,3 +29,14 @@ proc storeAccountAndLogin*(self: AccountModel, selectedAccountIndex: int, passwo
   let generatedAccount: GeneratedAccount = self.generatedAddresses[selectedAccountIndex]
   result = status_accounts.setupAccount(generatedAccount, password)
   self.currentAccount = generatedAccount.toAccount
+
+proc storeDerivedAndLogin*(self: AccountModel, importedAccount: GeneratedAccount, password: string): Account =
+  result = status_accounts.setupImportedAccount(importedAccount, password)
+  self.currentAccount = importedAccount.toAccount
+
+proc importMnemonic*(self: AccountModel, mnemonic: string): GeneratedAccount =
+  let importedAccount = status_accounts.multiAccountImportMnemonic(mnemonic)
+  importedAccount.derived = status_accounts.deriveAccounts(importedAccount.id)
+  importedAccount.name = status_accounts.generateAlias(importedAccount.derived.whisper.publicKey)
+  importedAccount.photoPath = status_accounts.generateIdenticon(importedAccount.derived.whisper.publicKey)
+  result = importedAccount

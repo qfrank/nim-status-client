@@ -58,6 +58,11 @@ Page {
                     return !resp.error
                 }
             }
+
+            DSM.SignalTransition {
+                targetState: existingKeyState
+                signal: genKey.btnExistingKey.clicked
+            }
         }
 
         DSM.State {

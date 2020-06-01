@@ -3,11 +3,15 @@ import QtQuick.Controls 2.4
 import QtQuick.Layouts 1.11
 import QtQuick.Window 2.11
 import QtQuick.Dialogs 1.3
+import "../imports"
+import "../shared"
 
 SwipeView {
     id: swipeView
     anchors.fill: parent
     currentIndex: 0
+
+    property alias btnExistingKey: btnExistingKey
 
     onCurrentItemChanged: {
         currentItem.txtPassword.focus = true;
@@ -93,6 +97,17 @@ SwipeView {
                 onClicked: {
                     swipeView.incrementCurrentIndex();
                 }
+            }
+
+            StyledButton {
+                id: btnExistingKey
+                label: "Access existing key"
+                anchors.bottom: parent.bottom
+                anchors.bottomMargin: 20
+                anchors.left: parent.left
+                anchors.leftMargin: 20
+                width: 142
+                height: 44
             }
 
         }
