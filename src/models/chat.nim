@@ -1,6 +1,7 @@
 import eventemitter, sets, json, strutils
 import sequtils
 import ../status/utils
+import ../status/core as status_core
 import ../status/chat as status_chat
 import chronicles
 import ../signals/types
@@ -43,47 +44,82 @@ proc hasChannel*(self: ChatModel, chatId: string): bool =
 proc getActiveChannel*(self: ChatModel): string =
   if (self.channels.len == 0): "" else: self.channels.toSeq[self.channels.len - 1]
 
-proc join*(self: ChatModel, chatId: string, chatTypeInt: ChatType, isNewChat: bool = true) =
+proc join*(self: ChatModel, chatId: string, chatType: ChatType) =
   if self.hasChannel(chatId): return
 
   self.channels.incl chatId
 
-  let generatedSymKey = status_chat.generateSymKeyFromPassword()
+  #let generatedSymKey = status_chat.generateSymKeyFromPassword()
 
   # TODO get this from the connection or something
-  let peer = "enode://44160e22e8b42bd32a06c1532165fa9e096eebedd7fa6d6e5f8bbef0440bc4a4591fe3651be68193a7ec029021cdb496cfe1d7f9f1dc69eb99226e6f39a7a5d4@35.225.221.245:443"
+  #let peer = "enode://44160e22e8b42bd32a06c1532165fa9e096eebedd7fa6d6e5f8bbef0440bc4a4591fe3651be68193a7ec029021cdb496cfe1d7f9f1dc69eb99226e6f39a7a5d4@35.225.221.245:443"
 
-  let oneToOne = isOneToOneChat(chatId)
-
-  if isNewChat: status_chat.saveChat(chatId, oneToOne)
-
-  let filterResult = status_chat.loadFilters(chatId = chatId, oneToOne = oneToOne)
+  status_chat.saveChat(chatId, chatType.isOneToOne)
+  echo status_chat.loadFilters(@[status_chat.buildFilter(chatId = chatId, oneToOne = chatType.isOneToOne)])
   
-  status_chat.chatMessages(chatId)
+  #status_chat.chatMessages(chatId)
+
+  #let filterResult = status_chat.loadFilters(chatId = chatId, oneToOne = oneToOne)
+  
+
+  #let parsedResult = parseJson(filterResult)["result"]
+
+  #var topics = newSeq[string](0)
+  #for topicObj in parsedResult:
+  #  if (($topicObj["chatId"]).strip(chars = {'"'}) == chatId):
+  #    topics.add(($topicObj["topic"]).strip(chars = {'"'}))
+
+  #  if(not self.filters.hasKey(chatId)): self.filters[chatId] = topicObj["filterId"].getStr
+
+  #if (topics.len == 0):
+  #  warn "No topic found for the chat. Cannot load past messages"
+  #else:
+  #  status_chat.requestMessages(topics, generatedSymKey, peer, 20)
+
+  self.events.emit("channelJoined", ChannelArgs(channel: chatId, chatTypeInt: chatType))
+  self.events.emit("activeChannelChanged", ChannelArgs(channel: self.getActiveChannel()))
+
+
+proc init*(self: ChatModel) =
+  let chatList = status_chat.loadChats()
+  let generatedSymKey = status_chat.generateSymKeyFromPassword()
+
+  let peer = "enode://c42f368a23fa98ee546fd247220759062323249ef657d26d357a777443aec04db1b29a3a22ef3e7c548e18493ddaf51a31b0aed6079bd6ebe5ae838fcfaf3a49@178.128.142.54:443"
+  # TODO this is needed for now for the retrieving of past messages. We'll either move or remove it later
+  status_core.addPeer(peer)
+
+
+  var filters:seq[JsonNode] = @[]
+  for chat in chatList:
+    if self.hasChannel(chat.id): continue
+   
+    filters.add status_chat.buildFilter(chatId = chat.id, oneToOne = chat.chatType.isOneToOne)
+    self.channels.incl chat.id
+    self.events.emit("channelJoined", ChannelArgs(channel: chat.id, chatTypeInt: chat.chatType))
+    self.events.emit("activeChannelChanged", ChannelArgs(channel: self.getActiveChannel()))
+
+  if filters.len == 0: return
+
+  let filterResult = status_chat.loadFilters(filters)
+  
+  self.events.emit("chatsLoaded", ChatArgs(chats: chatList))
+  
+  # TODO: call mailserver
+
 
   let parsedResult = parseJson(filterResult)["result"]
-
   var topics = newSeq[string](0)
   for topicObj in parsedResult:
-    if (($topicObj["chatId"]).strip(chars = {'"'}) == chatId):
-      topics.add(($topicObj["topic"]).strip(chars = {'"'}))
-
-    if(not self.filters.hasKey(chatId)): self.filters[chatId] = topicObj["filterId"].getStr
+    topics.add($topicObj["topic"].getStr)
+    self.filters[$topicObj["chatId"].getStr] = topicObj["filterId"].getStr
 
   if (topics.len == 0):
     warn "No topic found for the chat. Cannot load past messages"
   else:
     status_chat.requestMessages(topics, generatedSymKey, peer, 20)
 
-  self.events.emit("channelJoined", ChannelArgs(channel: chatId, chatTypeInt: chatTypeInt))
-  self.events.emit("activeChannelChanged", ChannelArgs(channel: self.getActiveChannel()))
 
-proc load*(self: ChatModel) =
-  let chatList = status_chat.loadChats()
-  for chat in chatList:
-    # TODO: use correct type of chat instead of hardcoded 2 (assumes it's only public chats)
-    self.join(chat.id, ChatType.Public, false)
-  self.events.emit("chatsLoaded", ChatArgs(chats: chatList))
+
 
 proc leave*(self: ChatModel, chatId: string) =
   status_chat.removeFilters(chatId, self.filters[chatId])

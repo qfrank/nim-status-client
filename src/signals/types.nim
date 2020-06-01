@@ -68,6 +68,8 @@ type Chat* = object
   # members ?
   # membershipUpdateEvents # ?
 
+proc isOneToOne*(self: ChatType): bool = self == ChatType.OneToOne
+
 type MessageSignal* = ref object of Signal
   messages*: seq[Message]
   chats*: seq[Chat]

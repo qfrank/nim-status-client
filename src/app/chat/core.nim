@@ -46,7 +46,7 @@ proc init*(self: ChatController) =
   self.model.events.on("activeChannelChanged") do(e: Args):
     self.view.setActiveChannel(ChannelArgs(e).channel)
 
-  self.model.load()
+  self.model.init()
   self.view.setActiveChannelByIndex(0)
 
 proc handleMessage(self: ChatController, data: Signal) =

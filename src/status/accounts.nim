@@ -143,10 +143,6 @@ proc setupAccount*(account: GeneratedAccount, password: string): Account =
 
   result = saveAccountAndLogin(multiAccounts, alias, identicon, $accountData, password, $constants.NODE_CONFIG, $settingsJSON)
 
-  # TODO this is needed for now for the retrieving of past messages. We'll either move or remove it later
-  let peer = "enode://44160e22e8b42bd32a06c1532165fa9e096eebedd7fa6d6e5f8bbef0440bc4a4591fe3651be68193a7ec029021cdb496cfe1d7f9f1dc69eb99226e6f39a7a5d4@35.225.221.245:443"
-  discard libstatus.addPeer(peer)
-
 proc login*(nodeAccount: NodeAccount, password: string): NodeAccount =
   let hashedPassword = "0x" & $keccak_256.digest(password)
   let account = nodeAccount.toAccount

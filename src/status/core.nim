@@ -21,6 +21,11 @@ proc callPrivateRPC*(methodName: string, payload = %* []): string =
     echo "error doing rpc request"
     echo methodName
 
+proc addPeer*(peer: string) = 
+  echo "ADDING PEER ======================================================"
+  echo libstatus.addPeer(peer)
+
+
 proc sendTransaction*(inputJSON: string, password: string): string =
   var hashed_password = "0x" & $keccak_256.digest(password)
   return $libstatus.sendTransaction(inputJSON, hashed_password)
