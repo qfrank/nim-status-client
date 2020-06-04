@@ -27,7 +27,12 @@ proc init*(self: ProfileController) =
   # let accounts = status_wallet.getAccounts()
   let accounts = self.status.wallet.accounts
 
-  let profile = accounts[0].toProfileModel()
+  # let profile = accounts[0].toProfileModel()
+  let profile = Profile()
+  profile.username = "hello"
+  # profile.username = accounts[0].username
+  # profile.identicon = accounts[0].identicon
+  profile.identicon = ""
   self.view.setNewProfile(profile)
 
   var mailservers = status_mailservers.getMailservers()
