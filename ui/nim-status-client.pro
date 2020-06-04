@@ -87,17 +87,17 @@ DISTFILES += \
     app/AppLayouts/Wallet/AddCustomTokenModal.qml \
     app/AppLayouts/Wallet/AssetsTab.qml \
     app/AppLayouts/Wallet/CollectiblesTab.qml \
-    app/AppLayouts/Wallet/Components/AccountSettingsModal.qml \
-    app/AppLayouts/Wallet/Components/AddAccount.qml \
-    app/AppLayouts/Wallet/Components/AddAccountWithPrivateKey.qml \
-    app/AppLayouts/Wallet/Components/AddAccountWithSeed.qml \
-    app/AppLayouts/Wallet/Components/AddWatchOnlyAccount \
-    app/AppLayouts/Wallet/Components/AddWatchOnlyAccount.qml \
-    app/AppLayouts/Wallet/Components/GenerateAccountModal.qml \
-    app/AppLayouts/Wallet/Components/SendModalContent.qml \
-    app/AppLayouts/Wallet/Components/SetCurrencyModalContent.qml \
-    app/AppLayouts/Wallet/Components/TokenSettingsModalContent.qml \
-    app/AppLayouts/Wallet/Components/qmldir \
+    app/AppLayouts/Wallet/components/AccountSettingsModal.qml \
+    app/AppLayouts/Wallet/components/AddAccount.qml \
+    app/AppLayouts/Wallet/components/AddAccountWithPrivateKey.qml \
+    app/AppLayouts/Wallet/components/AddAccountWithSeed.qml \
+    app/AppLayouts/Wallet/components/AddWatchOnlyAccount \
+    app/AppLayouts/Wallet/components/AddWatchOnlyAccount.qml \
+    app/AppLayouts/Wallet/components/GenerateAccountModal.qml \
+    app/AppLayouts/Wallet/components/SendModalContent.qml \
+    app/AppLayouts/Wallet/components/SetCurrencyModalContent.qml \
+    app/AppLayouts/Wallet/components/TokenSettingsModalContent.qml \
+    app/AppLayouts/Wallet/components/qmldir \
     app/AppLayouts/Wallet/HistoryTab.qml \
     app/AppLayouts/Profile/Sections/AboutContainer.qml \
     app/AppLayouts/Profile/Sections/AdvancedContainer.qml \
@@ -128,7 +128,6 @@ DISTFILES += \
     app/img/arrow-btn-inactive.svg \
     app/img/compass.svg \
     app/img/compassActive.svg \
-    app/img/close.svg \
     app/img/group_chat.svg \
     app/img/hash.svg \
     app/img/message.svg \
@@ -187,5 +186,7 @@ DISTFILES += \
     shared/RoundedIcon.qml \
     shared/StyledTextArea.qml \
     shared/TextWithLabel.qml \
+    shared/img/close.svg \
+    shared/img/status-logo.png \
     shared/qmldir
     
