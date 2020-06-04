@@ -1,5 +1,6 @@
 import NimQml
 import ../../status/libstatus/mailservers as status_mailservers
+import ../../status/libstatus/wallet as status_wallet
 import ../../signals/types
 import "../../status/libstatus/types" as status_types
 
@@ -22,8 +23,11 @@ proc delete*(self: ProfileController) =
   delete self.view
   delete self.variant
 
-proc init*(self: ProfileController, account: Account) =
-  let profile = account.toProfileModel()
+proc init*(self: ProfileController) =
+  # let accounts = status_wallet.getAccounts()
+  let accounts = self.status.wallet.accounts
+
+  let profile = accounts[0].toProfileModel()
   self.view.setNewProfile(profile)
 
   var mailservers = status_mailservers.getMailservers()

@@ -29,7 +29,10 @@ proc handleNodeLogin(self: LoginController, data: Signal) =
   if self.view.currentAccount.account != nil:
     self.view.setLastLoginResponse(response.event)
     if ?.response.event.error == "":
-      self.status.events.emit("login", AccountArgs(account: self.view.currentAccount.account.toAccount))
+      # self.status.accounts.confirmLogin(self.view.currentAccount.account.toAccount)
+      # self.status.accounts.confirmLogin(self.view.currentAccount.account)
+      # self.status.accounts.confirmLogin(self.view.currentAccount.account.toAccount())
+      self.status.accounts.confirmLogin()
 
 method onSignal(self: LoginController, data: Signal) =
   if data.signalType == SignalType.NodeLogin:

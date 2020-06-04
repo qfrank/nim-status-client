@@ -49,12 +49,11 @@ proc mainProc() =
   var profile = profile.newController(status)
   engine.setRootContextProperty("profileModel", profile.variant)
 
-  status.events.once("login") do(a: Args):
-    var args = AccountArgs(a)
+  status.once("loggedIn") do(a: Args):
     status.startMessenger()
     chat.init()
     wallet.init()
-    profile.init(args.account)
+    profile.init()
 
   var login = login.newController(status)
   var onboarding = onboarding.newController(status)
