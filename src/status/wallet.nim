@@ -143,6 +143,7 @@ proc addNewGeneratedAccount(self: WalletModel, generatedAccount: GeneratedAccoun
     error "Error storing the new account. Bad password?"
     return
 
+  echo $status_tokens.getTokenBalance("0x744d70fdbe2ba4cf95131626614a1763df805b9e", "0xf977814e90da44bfa03b6295a0616a897441acec")
   var symbol = "SNT"
   var asset = Asset(name:"Status", symbol: symbol, value: fmt"0.0", fiatValue: "$" & fmt"0.0", image: fmt"../../img/token-icons/{toLowerAscii(symbol)}.svg")
 
