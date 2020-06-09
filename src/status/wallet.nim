@@ -17,6 +17,7 @@ type CurrencyArgs* = ref object of Args
 
 type Asset* = ref object
     name*, symbol*, value*, fiatValue*, image*: string
+    hasIcon*: bool
 
 type Account* = ref object
     name*, address*, iconColor*, balance*: string
@@ -42,13 +43,6 @@ proc newWalletModel*(events: EventEmitter): WalletModel =
   result.tokens = %* []
   result.events = events
   result.defaultCurrency = ""
-  echo "--------"
-  echo tokenList["SNT"]
-  var test = tokenList["SNT"].toAssetConfig()
-  echo $test.symbol
-  echo $test.name
-  # echo tokenList["snt"]["symbol"]
-  echo "--------"
 
 proc initEvents*(self: WalletModel) =
  self.events.on("currencyChanged") do(e: Args):
@@ -129,12 +123,12 @@ proc generateAccountConfiguredAssets*(self: WalletModel): seq[Asset] =
   var assets: seq[Asset] = @[]
   var symbol = "ETH"
 
-  var asset = Asset(name:"Ethereum", symbol: symbol, value: "0.0", fiatValue: "0.0", image: fmt"../../img/token-icons/{toLowerAscii(symbol)}.svg")
+  var asset = Asset(name:"Ethereum", symbol: symbol, value: "0.0", fiatValue: "0.0", image: fmt"../../img/token-icons/{toLowerAscii(symbol)}.svg", hasIcon: true)
   asset.updateBalance()
   assets.add(asset)
   for token in self.tokens:
     var symbol = token["symbol"].getStr
-    var existingToken = Asset(name: token["name"].getStr, symbol: symbol, value: fmt"0.0", fiatValue: "$0.0", image: fmt"../../img/token-icons/{toLowerAscii(symbol)}.svg")
+    var existingToken = Asset(name: token["name"].getStr, symbol: symbol, value: fmt"0.0", fiatValue: "$0.0", image: fmt"../../img/token-icons/{toLowerAscii(symbol)}.svg", hasIcon: true)
     existingToken.updateBalance()
     assets.add(existingToken)
   assets

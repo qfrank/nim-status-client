@@ -1325,3 +1325,9 @@ var tokenList* = {
         "hasIcon": "false"
     }
 }.toTable
+
+proc getTokenConfig*(symbol: string): AssetConfig =
+  if not tokenList.hasKey(symbol):
+    raise newException(Exception, "token not found in the token list")
+    # return tokenList["DEFAULT"].toAssetConfig
+  tokenList[symbol].toAssetConfig
