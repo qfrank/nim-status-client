@@ -31,6 +31,7 @@ type WalletModel* = ref object
     tokens*: JsonNode
 
 proc updateBalance*(self: Account)
+proc updateBalance*(self: Asset)
 proc getDefaultCurrency*(self: WalletModel): string
 
 proc newWalletModel*(events: EventEmitter): WalletModel =
@@ -45,6 +46,8 @@ proc initEvents*(self: WalletModel) =
     self.defaultCurrency = self.getDefaultCurrency()
     for account in self.accounts:
       account.updateBalance()
+      for asset in account.assetList:
+        asset.updateBalance()
     self.events.emit("accountsUpdated", Args())
 
 proc delete*(self: WalletModel) =
@@ -75,7 +78,7 @@ proc setDefaultCurrency*(self: WalletModel, currency: string) =
 proc getFiatValue*(eth_balance: string, symbol: string, fiat_symbol: string): float =
   if eth_balance == "0.0": return 0.0
   # 3. get usd price of 1 eth
-  var fiat_eth_price = status_wallet.getPrice("ETH", fiat_symbol)
+  var fiat_eth_price = status_wallet.getPrice(symbol, fiat_symbol)
   echo(fmt"fiat_price: {fiat_eth_price}")
 
   # 4. convert balance to usd
@@ -97,14 +100,33 @@ proc updateBalance*(self: Account) =
   var totalAccountBalance = usd_balance
   self.balance = fmt"{totalAccountBalance:.2f} {defaultCurrency}"
 
+proc updateBalance*(self: Asset) =
+  let defaultCurrency = getDefaultCurrency()
+  if self.symbol == "ETH":
+    let eth_balance = getEthBalance("0x6b9ef02657339310e28a7a9d4b5f25f7c1f68d61")
+    let usd_balance = getFiatValue(eth_balance, self.symbol, defaultCurrency)
+    var totalAccountBalance = usd_balance
+    self.value = eth_balance
+    self.fiatValue = fmt"{totalAccountBalance:.2f} {defaultCurrency}"
+  else:
+    let symbol = self.symbol
+    var token_balance = $status_tokens.getTokenBalance("0x744d70fdbe2ba4cf95131626614a1763df805b9e", "0xf977814e90da44bfa03b6295a0616a897441acec")
+    let fiat_balance = getFiatValue(token_balance, symbol, defaultCurrency)
+    var totalAccountBalance = fiat_balance
+    self.value = token_balance
+    self.fiatValue = fmt"{totalAccountBalance:.2f} {defaultCurrency}"
+
 proc generateAccountConfiguredAssets*(self: WalletModel): seq[Asset] =
   var assets: seq[Asset] = @[]
   var symbol = "ETH"
-  var asset = Asset(name:"Ethereum", symbol: symbol, value: fmt"0.0", fiatValue: "$" & fmt"0.0", image: fmt"../../img/token-icons/{toLowerAscii(symbol)}.svg")
+
+  var asset = Asset(name:"Ethereum", symbol: symbol, value: "0.0", fiatValue: "0.0", image: fmt"../../img/token-icons/{toLowerAscii(symbol)}.svg")
+  asset.updateBalance()
   assets.add(asset)
   for token in self.tokens:
     var symbol = token["symbol"].getStr
     var existingToken = Asset(name: token["name"].getStr, symbol: symbol, value: fmt"0.0", fiatValue: "$0.0", image: fmt"../../img/token-icons/{toLowerAscii(symbol)}.svg")
+    existingToken.updateBalance()
     assets.add(existingToken)
   assets
 
@@ -142,10 +164,6 @@ proc addNewGeneratedAccount(self: WalletModel, generatedAccount: GeneratedAccoun
   except:
     error "Error storing the new account. Bad password?"
     return
-
-  echo $status_tokens.getTokenBalance("0x744d70fdbe2ba4cf95131626614a1763df805b9e", "0xf977814e90da44bfa03b6295a0616a897441acec")
-  var symbol = "SNT"
-  var asset = Asset(name:"Status", symbol: symbol, value: fmt"0.0", fiatValue: "$" & fmt"0.0", image: fmt"../../img/token-icons/{toLowerAscii(symbol)}.svg")
 
   var assets: seq[Asset] = self.generateAccountConfiguredAssets()
   var account = Account(name: accountName, address: derivedAccount.address, iconColor: color, balance: fmt"0.00 {self.defaultCurrency}", assetList: assets, realFiatBalance: 0.0)

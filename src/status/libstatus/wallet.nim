@@ -32,7 +32,6 @@ proc getWalletAccounts*(): seq[WalletAccount] =
   except:
     error "Failed getting wallet accounts"
 
-
 proc sendTransaction*(from_address: string, to: string, value: string, password: string): string =
   var args = %* {
     "value": fmt"0x{toHex(value)}",
@@ -44,14 +43,17 @@ proc sendTransaction*(from_address: string, to: string, value: string, password:
 
 proc getPrice*(crypto: string, fiat: string): string =
   var url: string = fmt"https://min-api.cryptocompare.com/data/price?fsym={crypto}&tsyms={fiat}"
+  echo url
   let client = newHttpClient()
   client.headers = newHttpHeaders({ "Content-Type": "application/json" })
 
   try:
     let response = client.request(url)
+    echo $response.body
     result = $parseJson(response.body)[fiat.toUpper]
-  except:
+  except Exception as e:
     echo "error getting price"
+    echo e.msg
 
 proc getBalance*(address: string): string =
   let payload = %* [address, "latest"]
