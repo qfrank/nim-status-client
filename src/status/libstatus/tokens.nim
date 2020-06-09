@@ -32,7 +32,9 @@ proc getTokensBalances*(accounts: openArray[string], tokens: openArray[string]):
   response["result"]
 
 proc getTokenBalance*(tokenAddress: string, account: string): string = 
-  var postfixedAccount = account.removePrefix("0x")
+  var postfixedAccount: string = account
+  postfixedAccount.removePrefix("0x")
+  # postfixedAccount.removePrefix('x')
   # var postfixedAccount = "f977814e90da44bfa03b6295a0616a897441acec"
   let payload = %* [{
     "to": tokenAddress,
@@ -44,4 +46,4 @@ proc getTokenBalance*(tokenAddress: string, account: string): string =
   echo "----------"
   var response = status.callPrivateRPC("eth_call", payload)
   var balance = response.parseJson["result"].getStr
-  result $hex2Eth(balance)
+  result = $hex2Eth(balance)
