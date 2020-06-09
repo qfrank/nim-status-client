@@ -2,6 +2,7 @@ import eventemitter
 import json
 import strformat
 import strutils
+import tables
 import libstatus/wallet as status_wallet
 import libstatus/settings as status_settings
 import libstatus/accounts as status_accounts
@@ -9,6 +10,7 @@ import libstatus/accounts/constants as constants
 import libstatus/types
 import chronicles
 import libstatus/tokens as status_tokens
+import wallet/token_list
 
 type CurrencyArgs* = ref object of Args
     currency*: string
@@ -40,6 +42,13 @@ proc newWalletModel*(events: EventEmitter): WalletModel =
   result.tokens = %* []
   result.events = events
   result.defaultCurrency = ""
+  echo "--------"
+  echo tokenList["SNT"]
+  var test = tokenList["SNT"].toAssetConfig()
+  echo $test.symbol
+  echo $test.name
+  # echo tokenList["snt"]["symbol"]
+  echo "--------"
 
 proc initEvents*(self: WalletModel) =
  self.events.on("currencyChanged") do(e: Args):
