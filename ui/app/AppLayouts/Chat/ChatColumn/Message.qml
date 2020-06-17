@@ -35,6 +35,21 @@ Item {
         }
     }
 
+    function linkify(inputText) {
+        var replacedText;
+
+        //URLs starting with http://, https://, or ftp://
+        var replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+        replacedText = inputText.replace(replacePattern1, "<a href='$1'>$1</a>");
+
+        //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+        var replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+        replacedText = replacedText.replace(replacePattern2, "$1<a href='http://$2'>$2</a>");
+
+        console.log(replacedText)
+        return replacedText;
+    }
+
     ProfilePopup {
       id: profilePopup
     }
@@ -234,7 +249,7 @@ Item {
 
         TextEdit {
             id: chatText
-            text: message
+            text: linkify(message)
             anchors.left: parent.left
             anchors.leftMargin: parent.chatHorizontalPadding
             anchors.right: message.length > 52 ? parent.right : undefined
@@ -249,6 +264,12 @@ Item {
             selectByMouse: true
             color: !isCurrentUser ? Theme.black : Theme.white
             visible: contentType == Constants.messageType
+            onLinkActivated: Qt.openUrlExternally(link)
+            MouseArea {
+                anchors.fill: parent
+                acceptedButtons: Qt.NoButton // we don't want to eat clicks on the Text
+                cursorShape: parent.hoveredLink ? Qt.PointingHandCursor : Qt.ArrowCursor
+            }
         }
 
         Image {
