@@ -1,6 +1,7 @@
 import QtQuick 2.3
-import QtQuick.Controls 2.3
-import QtQuick.Controls 2.12 as QQC2
+// import QtQuick.Controls 2.3
+// import QtQuick.Controls 2.12 as QQC2
+import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.3
 import Qt.labs.platform 1.1
 import "../../../../shared"
@@ -36,11 +37,11 @@ Item {
     }
 
     function linkify(inputText) {
-        var replacedText;
+        var replacedText = escape(inputText).replace(/%20/g, ' ').replace(/%3A/g, ':').replace(/%22/g, '/');
 
         //URLs starting with http://, https://, or ftp://
         var replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
-        replacedText = inputText.replace(replacePattern1, "<a href='$1'>$1</a>");
+        replacedText = replacedText.replace(replacePattern1, "<a href='$1'>$1</a>");
 
         //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
         var replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
@@ -250,6 +251,8 @@ Item {
         TextEdit {
             id: chatText
             text: linkify(message)
+            textFormat: TextEdit.RichText
+            // text: linkify("hello https://status.im/docs/FAQs.html dude")
             anchors.left: parent.left
             anchors.leftMargin: parent.chatHorizontalPadding
             anchors.right: message.length > 52 ? parent.right : undefined

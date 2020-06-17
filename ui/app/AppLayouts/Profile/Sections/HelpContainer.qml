@@ -10,6 +10,22 @@ Item {
     Layout.fillHeight: true
     Layout.fillWidth: true
 
+    function linkify(inputText) {
+        var replacedText;
+
+        //URLs starting with http://, https://, or ftp://
+        var replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+        replacedText = inputText.replace(replacePattern1, "<a href='$1'>$1</a>");
+
+        //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+        var replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+        replacedText = replacedText.replace(replacePattern2, "$1<a href='http://$2'>$2</a>");
+
+        console.log(replacedText)
+        return replacedText;
+    }
+
+
     Text {
         id: element8
         text: qsTr("Help menus: FAQ, Glossary, etc.")
@@ -23,7 +39,7 @@ Item {
 
     Text {
         anchors.centerIn: parent
-        text: "<a href='https://status.im/docs/FAQs.html'>Frequently asked questions</a>"
+        text: linkify("hello https://status.im/docs/FAQs.html dude")
         onLinkActivated: Qt.openUrlExternally(link)
 
         MouseArea {
