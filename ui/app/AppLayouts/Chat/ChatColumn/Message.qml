@@ -4,6 +4,7 @@ import QtQuick 2.3
 import QtQuick.Controls 2.12
 import QtQuick.Layouts 1.3
 import Qt.labs.platform 1.1
+import "xss.js" as XSS
 import "../../../../shared"
 import "../../../../imports"
 import "../components"
@@ -37,7 +38,8 @@ Item {
     }
 
     function linkify(inputText) {
-        var replacedText = escape(inputText).replace(/%20/g, ' ').replace(/%3A/g, ':').replace(/%22/g, '/');
+        // var replacedText = escape(inputText).replace(/%20/g, ' ').replace(/%3A/g, ':').replace(/%22/g, '/');
+        var replacedText = inputText
 
         //URLs starting with http://, https://, or ftp://
         var replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
@@ -46,6 +48,8 @@ Item {
         //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
         var replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
         replacedText = replacedText.replace(replacePattern2, "$1<a href='http://$2'>$2</a>");
+
+        replacedText = XSS.filterXSS(replacedText)
 
         console.log(replacedText)
         return replacedText;
